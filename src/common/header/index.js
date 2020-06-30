@@ -16,27 +16,34 @@ import { HeaderWrapper, Logo,
 class Header extends Component {
   // 显示数据
   getListArea () {
-    const {focused, list} = this.props
-    if(focused) {
+    const {focused, list, page,mouseIn,pages,
+      handleMouseEnter, handleMouseLeave,handleChangeList} = this.props
+    const newList = list.toJS()
+    const pagesList = []
+    if (newList.length) {
+      for (let i = (page - 1) * 10; i < page*10; i++) {
+        pagesList.push(
+          <SearchInfoItem key={newList[i]}>{newList[i]}</SearchInfoItem>
+        )
+      }
+    }
+    if(focused || mouseIn) {
       return (
-        <SearchInfo>
+        <SearchInfo onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           <SearchInfoTitle>
             热门搜索
-            <SearchInfoSwitch>换一换</SearchInfoSwitch>
+            <SearchInfoSwitch onClick={() => handleChangeList(page,pages, this.spinIcon)}>
+              <i ref={(icon) => {this.spinIcon = icon}} className="iconfont spin"> &#xe612; </i> 换一换</SearchInfoSwitch>
           </SearchInfoTitle>
           <div>
-            {
-              list.map((item) => {
-              return <SearchInfoItem key={item}>{item}</SearchInfoItem>
-              })
-            }
+            { pagesList }
           </div>
         </SearchInfo>
       )
     }
   }
   render () {
-    const {focused, handleInputFocus, handleInputBlur} = this.props
+    const {focused,list, handleInputFocus, handleInputBlur} = this.props
     return (
       <HeaderWrapper>
         <Logo />
@@ -51,11 +58,11 @@ class Header extends Component {
               timeout={200}
               classNames="slide">
               <NavSearch className={focused ? 'focused': ''}
-                onFocus={handleInputFocus}
+                onFocus={() => handleInputFocus(list)}
                 onBlur={handleInputBlur}
               ></NavSearch>
             </CSSTransition>
-            <span className={focused ? 'focused iconfont': 'iconfont'}>&#xe60c;</span>
+            <span className={focused ? 'focused iconfont zoom': 'iconfont zoom'}>&#xe60c;</span>
             {this.getListArea()}
           </SearchWrapper>
   
@@ -72,18 +79,38 @@ class Header extends Component {
 const mapStateToProps = (state) => {
   return {
     focused:state.getIn(['header', 'focused']),
-    list:state.getIn(['header','list'])
+    list:state.getIn(['header','list']),
+    mouseIn:state.getIn(['header','mouseIn']),
+    page:state.getIn(['header','page']),
+    pages:state.getIn(['header','pages'])
   }
 }
 const mapDispathToProps = (dispatch) => {
   return {
-    handleInputFocus() {
-      dispatch(actionCreators.getList())
+    handleInputFocus(list) {
+      (list.size === 0) && dispatch(actionCreators.getList())
       dispatch(actionCreators.searchFocus())
     },
     handleInputBlur() {
       dispatch(actionCreators.searchBlur())
+    },
+    handleChangeList (page,pages,spin) {
+      let aa = + spin.style.transform.replace(/[^0-9]/ig,'')
+      spin.style.transform ="rotate(0deg)"
+      spin.style.transform = `rotate(${aa + 360}deg)`
+      if (page < pages ) {
+        dispatch(actionCreators.changePage(page + 1))
+      } else {
+        dispatch(actionCreators.changePage(1))
+      }
+    },
+    handleMouseEnter () {
+      dispatch(actionCreators.mouseEnter())
+    },
+    handleMouseLeave () {
+      dispatch(actionCreators.mouseLeave())
     }
+
   }
 }
 export default connect(mapStateToProps, mapDispathToProps) (Header)
