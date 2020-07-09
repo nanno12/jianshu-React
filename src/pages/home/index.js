@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux'
 import List from './component/List';
 import Recommend from './component/Recommend';
@@ -13,7 +13,7 @@ import {
 
 } from './style';
 
-class Home extends Component {
+class Home extends PureComponent {
   render () {
     return (
       <HomerWrapper>
@@ -26,6 +26,7 @@ class Home extends Component {
           <Recommend></Recommend>
           <Writer></Writer>
         </HomerRight>
+        <div>回到top</div>
       </HomerWrapper>
     )
   }
